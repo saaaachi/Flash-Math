@@ -5,50 +5,80 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Flash Math - 第30弾</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #fff3e0; font-family: sans-serif; touch-action: none; }
-        #ad-top, #ad-bottom { position: fixed; left: 0; width: 100%; height: 150px; background: #333; z-index: 100; display: flex; align-items: center; justify-content: center; }
-        #ad-top { top: 0; } #ad-bottom { bottom: 0; }
-        iframe { border: none; width: 100%; height: 150px; }
-        #game-area { margin-top: 150px; height: calc(100vh - 300px); display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #question { font-size: 80px; font-weight: bold; color: #e65100; margin-bottom: 30px; }
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .num-btn { width: 120px; height: 80px; font-size: 32px; border: none; border-radius: 10px; background: #ff9800; color: white; font-weight: bold; box-shadow: 0 4px #ef6c00; cursor: pointer; }
-        #ui { position: absolute; top: 160px; width: 100%; text-align: center; font-size: 24px; font-weight: bold; color: #e65100; }
+        * { box-sizing: border-box; }
+        body { margin: 0; overflow: hidden; background: #fff3e0; font-family: sans-serif; touch-action: none; position: fixed; width: 100%; height: 100%; }
         
-        /* 終了後メニュー */
-        #end-menu { 
-            position: absolute; top: 150px; width: 100%; height: calc(100vh - 300px); 
-            background: rgba(255,255,255,0.95); display: none; flex-direction: column; 
-            align-items: center; justify-content: center; z-index: 60; 
+        /* 広告枠：100px固定 */
+        #ad-top, #ad-bottom { position: fixed; left: 0; width: 100%; height: 100px; background: #333; z-index: 100; display: flex; align-items: center; justify-content: center; }
+        #ad-top { top: 0; } #ad-bottom { bottom: 0; }
+        iframe { border: none; width: 100%; height: 100px; }
+
+        /* ゲームエリア */
+        #game-outer { position: absolute; top: 100px; bottom: 100px; left: 0; right: 0; background: #fff3e0; overflow: hidden; }
+        #game-area { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; }
+        
+        #ui { position: absolute; top: 10px; width: 100%; text-align: center; font-size: 20px; font-weight: bold; color: #e65100; z-index: 10; }
+        #question { font-size: 60px; font-weight: bold; color: #e65100; margin-bottom: 20px; text-shadow: 2px 2px 0 white; }
+        
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .num-btn { width: 110px; height: 70px; font-size: 28px; border: none; border-radius: 12px; background: #ff9800; color: white; font-weight: bold; box-shadow: 0 4px #ef6c00; cursor: pointer; }
+        .num-btn:active { transform: translateY(2px); box-shadow: 0 2px #ef6c00; }
+
+        /* メニュー画面：スクロール対応 */
+        #menuScreen { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(255,255,255,0.96); display: flex; flex-direction: column; 
+            align-items: center; justify-content: flex-start; z-index: 50; 
+            padding: 5px 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
         }
-        .menu-btn { 
-            width: 220px; padding: 15px; margin: 10px; font-size: 20px; 
-            border: none; border-radius: 30px; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center;
-        }
-        #retry-btn { background: #ff9800; color: white; box-shadow: 0 5px #e65100; }
-        #more-games-btn { background: #ff4081; color: white; box-shadow: 0 5px #c2185b; }
+
+        #ad-middle-container { width: 300px; height: 120px; background: #000; margin: 5px 0; display: none; justify-content: center; align-items: center; overflow: hidden; flex-shrink: 0; }
+
+        .menu-btn-group { display: flex; flex-direction: column; align-items: center; width: 100%; gap: 8px; padding-bottom: 20px; }
+        .menu-btn { width: 220px; padding: 12px; font-size: 18px; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center; }
+        #retry-btn { background: #ff9800; color: white; box-shadow: 0 4px #e65100; }
+        #more-games-btn { background: #ff4081; color: white; box-shadow: 0 4px #c2185b; }
     </style>
 </head>
 <body>
+
     <div id="ad-top"><iframe src="ad.html"></iframe></div>
-    <div id="ad-bottom"><iframe src="ad.html"></iframe></div>
-    
-    <div id="end-menu">
-        <h2 id="result-msg" style="color:#e65100; text-align:center;">Flash Math</h2>
-        <button id="retry-btn" class="menu-btn" onclick="startNewGame()">もう一度遊ぶ</button>
-        <a href="https://saaaachi.github.io/slime-math/" id="more-games-btn" class="menu-btn">他のゲームはこちら</a>
+
+    <div id="game-outer">
+        <div id="ui">SCORE: 0</div>
+        
+        <div id="game-area">
+            <div id="question">? + ?</div>
+            <div class="btn-group" id="choices"></div>
+        </div>
+
+        <div id="menuScreen">
+            <h2 id="result-msg" style="color:#e65100; margin: 10px 0; font-size: 24px;">Flash Math</h2>
+            <p style="font-size: 13px; color: #666; margin: 0;">素早く計算して答えを選ぼう！</p>
+            
+            <div id="ad-middle-container">
+                <script src="https://adm.shinobi.jp/s/1e6de436ea850948e238e975a93767eb"></script>
+            </div>
+
+            <div class="menu-btn-group">
+                <button id="retry-btn" class="menu-btn" onclick="startNewGame()">スタート！</button>
+                <a href="https://saaaachi.github.io/slime-math/" id="more-games-btn" class="menu-btn">他のゲームはこちら</a>
+            </div>
+        </div>
     </div>
 
-    <div id="ui">SCORE: 0</div>
-    <div id="game-area">
-        <div id="question">? + ?</div>
-        <div class="btn-group" id="choices"></div>
-    </div>
+    <div id="ad-bottom"><iframe src="ad.html"></iframe></div>
+
     <script>
         let score = 0, answer, timer, gameActive = false;
+        const menuScreen = document.getElementById("menuScreen");
+        const adMid = document.getElementById("ad-middle-container");
+        const resultMsg = document.getElementById("result-msg");
+        const retryBtn = document.getElementById("retry-btn");
 
         function startNewGame() {
-            document.getElementById("end-menu").style.display = "none";
+            menuScreen.style.display = "none";
+            adMid.style.display = "none";
             score = 0;
             document.getElementById("ui").innerText = "SCORE: 0";
             gameActive = true;
@@ -57,16 +87,24 @@
 
         function next() {
             if(!gameActive) return;
-            const a = Math.floor(Math.random()*9)+1; const b = Math.floor(Math.random()*9)+1;
+            const a = Math.floor(Math.random()*9)+1; 
+            const b = Math.floor(Math.random()*9)+1;
             answer = a + b;
             document.getElementById("question").innerText = a + " + " + b;
-            const choices = [answer, answer+1, answer-1, answer+2].sort(() => Math.random()-0.5);
+            
+            // 選択肢の生成（正解 + 紛らわしい数字）
+            const choices = [answer, answer+1, answer-1, answer+2];
+            // 重複削除とシャッフル
+            const uniqueChoices = [...new Set(choices)].sort(() => Math.random()-0.5);
+            
             const container = document.getElementById("choices");
             container.innerHTML = "";
-            choices.forEach(c => {
+            uniqueChoices.forEach(c => {
                 const btn = document.createElement("button");
-                btn.className = "num-btn"; btn.innerText = c;
+                btn.className = "num-btn";
+                btn.innerText = c;
                 btn.onclick = () => {
+                    if(!gameActive) return;
                     if(c === answer) { 
                         score++; 
                         document.getElementById("ui").innerText = "SCORE:"+score; 
@@ -77,23 +115,30 @@
                 };
                 container.appendChild(btn);
             });
+            
             clearTimeout(timer);
-            timer = setTimeout(() => { gameOver("時間切れ！"); }, Math.max(1000, 2000 - score*50));
+            // スコアに応じて加速
+            timer = setTimeout(() => { gameOver("時間切れ！"); }, Math.max(800, 2000 - score*60));
         }
 
         function gameOver(msg) {
             gameActive = false;
             clearTimeout(timer);
-            document.getElementById("result-msg").innerText = msg + "\nSCORE: " + score;
-            document.getElementById("end-menu").style.display = "flex";
+            resultMsg.innerText = msg + "\nSCORE: " + score;
+            retryBtn.innerText = "もう一度遊ぶ";
+            adMid.style.display = "flex";
+            menuScreen.style.display = "flex";
+            menuScreen.scrollTop = 0;
         }
 
-        window.onload = () => {
-            document.getElementById("end-menu").style.display = "flex";
-            document.getElementById("retry-btn").innerText = "スタート！";
-        };
-
-        setInterval(() => { const fs = document.querySelectorAll('iframe'); fs.forEach(f => { const s = f.src; f.src = "about:blank"; setTimeout(() => f.src = s, 100); }); }, 30000);
+        // 30秒ごとに上下広告をリフレッシュ
+        setInterval(() => {
+            const fs = document.querySelectorAll('iframe');
+            fs.forEach(f => {
+                const s = f.src; f.src = "about:blank";
+                setTimeout(() => f.src = s, 100);
+            });
+        }, 29000);
     </script>
 </body>
 </html>

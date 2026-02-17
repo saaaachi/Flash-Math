@@ -18,12 +18,24 @@
         #game-area { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; }
         
         #ui { position: absolute; top: 10px; width: 100%; text-align: center; font-size: 20px; font-weight: bold; color: #e65100; z-index: 10; }
-        #question { font-size: 60px; font-weight: bold; color: #e65100; margin-bottom: 20px; text-shadow: 2px 2px 0 white; }
+        
+        /* タイトルのスタイル修正：中央寄せ＆サイズアップ */
+        #question { 
+            width: 100%;
+            text-align: center;
+            font-size: 14vw; /* 画面幅に合わせて自動調整（横1列に収まるサイズ） */
+            max-size: 80px;
+            font-weight: bold; 
+            color: #e65100; 
+            margin-bottom: 20px; 
+            text-shadow: 2px 2px 0 white;
+            white-space: nowrap; /* 改行禁止 */
+        }
         
         .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .num-btn { width: 110px; height: 70px; font-size: 28px; border: none; border-radius: 12px; background: #ff9800; color: white; font-weight: bold; box-shadow: 0 4px #ef6c00; cursor: pointer; }
 
-        /* メニュー画面（ゲームオーバー画面） */
+        /* メニュー画面 */
         #menuScreen { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(255,255,255,0.98); display: none; flex-direction: column; 
@@ -31,10 +43,9 @@
             padding: 15px 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
         }
 
-        /* 毎回表示される中サイズ広告枠 */
         #mid-ad-box { margin: 10px 0; min-height: 250px; display: flex; justify-content: center; align-items: center; background: #eee; width: 300px; }
 
-        /* 大広告オーバーレイ（3/7回おき） */
+        /* 大広告オーバーレイ */
         #bigAdScreen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95); z-index: 2000;
@@ -69,7 +80,7 @@
         </div>
 
         <div id="menuScreen">
-            <h2 id="result-msg" style="color:#e65100; margin: 5px 0; font-size: 22px;">Flash Math</h2>
+            <h2 id="result-msg" style="color:#e65100; margin: 5px 0; font-size: 24px; text-align: center; width: 100%;">Flash Math</h2>
             
             <div id="mid-ad-box">
                 <div id="im-8b988d7b042a42d5b8df6921b628cf00">
@@ -105,11 +116,14 @@
         let score = 0, answer, timer, gameActive = false, playCount = 0;
         const menuScreen = document.getElementById("menuScreen");
         const retryBtn = document.getElementById("retry-btn");
+        const questionText = document.getElementById("question");
 
         function startNewGame() {
             menuScreen.style.display = "none";
             score = 0;
             document.getElementById("ui").innerText = "SCORE: 0";
+            // フォントサイズを計算用に調整（数字の時は少し小さく）
+            questionText.style.fontSize = "60px";
             gameActive = true;
             next();
         }
@@ -119,7 +133,7 @@
             const a = Math.floor(Math.random()*9)+1; 
             const b = Math.floor(Math.random()*9)+1;
             answer = a + b;
-            document.getElementById("question").innerText = a + " + " + b;
+            questionText.innerText = a + " + " + b;
             
             const choices = [answer, answer+1, answer-1, answer+2];
             const uniqueChoices = [...new Set(choices)].sort(() => Math.random()-0.5);
@@ -148,13 +162,15 @@
             playCount++;
             clearTimeout(timer);
             
+            // ゲームオーバー時にタイトルをロゴに戻す
+            questionText.innerText = "FLASH MATH";
+            questionText.style.fontSize = "14vw";
+            
             document.getElementById("result-msg").innerText = msg + " (SCORE: " + score + ")";
             
-            // リトライボタンを1.5秒無効化
             retryBtn.disabled = true;
             retryBtn.innerText = "お待ちください...";
 
-            // 大広告判定（3/7回おき）
             if (playCount === 3 || (playCount > 3 && (playCount - 3) % 7 === 0)) {
                 showBigAd();
             } else {
@@ -162,7 +178,7 @@
                 setTimeout(() => {
                     retryBtn.disabled = false;
                     retryBtn.innerText = "もう一度遊ぶ";
-                }, 1500); // 1.5秒のディレイ
+                }, 1500); 
             }
         }
 
@@ -172,14 +188,13 @@
             document.getElementById("ad-large-frame").src = "ad.large.html?t=" + Date.now();
             screen.style.display = "flex";
             closeBtn.style.display = "none";
-            setTimeout(() => { closeBtn.style.display = "flex"; }, 5000); // 大広告は5秒
+            setTimeout(() => { closeBtn.style.display = "flex"; }, 5000);
         }
 
         function closeAd() {
             document.getElementById("bigAdScreen").style.display = "none";
             document.getElementById("ad-large-frame").src = "";
             menuScreen.style.display = "flex";
-            // 大広告を閉じた後も、中サイズ広告を見せるために1.5秒待機
             setTimeout(() => {
                 retryBtn.disabled = false;
                 retryBtn.innerText = "もう一度遊ぶ";
